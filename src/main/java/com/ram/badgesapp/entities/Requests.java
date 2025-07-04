@@ -19,10 +19,11 @@ public class Requests {
     @Enumerated(EnumType.STRING)
     private ReqStatus reqStatus;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
 
-    private LocalDateTime createdDate;
+    private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
     private ReqType reqType;
