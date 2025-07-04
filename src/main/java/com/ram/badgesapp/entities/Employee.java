@@ -22,9 +22,11 @@ public class Employee {
     private String phone;
 
     @ManyToOne
+    @JoinColumn(name = "company_id")
     private Company company;
 
     @OneToOne
+    @JoinColumn(name = "badge_id")
     private Badge badge;
 
     @OneToOne(mappedBy = "employee")

@@ -24,7 +24,6 @@ public class User {
 
     @OneToOne
     @JoinColumn(name = "employee_id")
-    @JsonIgnore
     private Employee employee;
 
     @Enumerated(EnumType.STRING)

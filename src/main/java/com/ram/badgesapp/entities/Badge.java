@@ -28,7 +28,7 @@ public class Badge {
     @ManyToOne
     private Company company;
 
-    @OneToOne(mappedBy = "employee_id")
+    @OneToOne(mappedBy = "badge")
     private Employee employee;
 
 

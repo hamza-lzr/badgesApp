@@ -15,8 +15,8 @@ public class BadgeAirport {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private LocalDate dateDebut;
-    private LocalDate dateFin;
+    private LocalDate startDate;
+    private LocalDate endDate;
 
     @ManyToOne
     @JoinColumn(name = "airport_id")
