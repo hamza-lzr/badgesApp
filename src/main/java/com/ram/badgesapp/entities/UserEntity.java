@@ -1,13 +1,13 @@
 package com.ram.badgesapp.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
 @Data
-public class User {
+public abstract class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -18,18 +18,9 @@ public class User {
 
     private String password;
 
-
     @Enumerated(EnumType.STRING)
-    private Role role; // ADMIN, EMPLOYEE
-
-    @OneToOne
-    @JoinColumn(name = "employee_id")
-    private Employee employee;
-
-    @Enumerated(EnumType.STRING)
-    private Status status;
-
-
+    private Role role;
 
 
 }
+

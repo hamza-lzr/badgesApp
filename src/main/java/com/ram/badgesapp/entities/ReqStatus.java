@@ -1,5 +1,5 @@
 package com.ram.badgesapp.entities;
 
 public enum ReqStatus {
-    PENDING, ACCEPTED, REJECTED;
+    PENDING, APPROVED, REJECTED;
 }

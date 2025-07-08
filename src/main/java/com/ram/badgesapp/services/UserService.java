@@ -1,6 +1,6 @@
 package com.ram.badgesapp.services;
 
-import com.ram.badgesapp.entities.User;
+import com.ram.badgesapp.entities.UserEntity;
 import com.ram.badgesapp.repos.UserRepo;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -15,37 +15,34 @@ public class UserService {
         this.userRepo = userRepo;
     }
 
-    public List<User> getUsers() {
+    public List<UserEntity> getAllUsers() {
         return userRepo.findAll();
     }
 
-    public User getUserById(Long id) {
+    public UserEntity getUserById(Long id) {
         return userRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id " + id));
     }
 
-    public User addUser(User user) {
-        return userRepo.save(user);
+    public UserEntity addUser(UserEntity userEntity) {
+        return userRepo.save(userEntity);
     }
 
     public void deleteUser(Long id) {
-        User user = getUserById(id);
-        userRepo.delete(user);
+        UserEntity userEntity = getUserById(id);
+        userRepo.delete(userEntity);
 
     }
 
-    public User updateUser(Long id, User user) {
-        User currentUser = userRepo.findById(id)
+    public UserEntity updateUser(Long id, UserEntity userEntity) {
+        UserEntity currentUserEntity = userRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id " + id));
-            currentUser.setEmail(user.getEmail());
-            currentUser.setRole(user.getRole());
-            currentUser.setStatus(user.getStatus());
-            currentUser.setEmployee(user.getEmployee());
-            currentUser.setPassword(user.getPassword());
-            userRepo.save(currentUser);
+            currentUserEntity.setEmail(userEntity.getEmail());
+            currentUserEntity.setRole(userEntity.getRole());
+            userRepo.save(currentUserEntity);
 
 
-        return  currentUser;
+        return currentUserEntity;
 
     }
 

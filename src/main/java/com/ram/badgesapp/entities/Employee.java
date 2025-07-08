@@ -2,15 +2,13 @@ package com.ram.badgesapp.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Entity
-@Table
+@DiscriminatorValue("EMPLOYEE")
 @Data
-public class Employee {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+@EqualsAndHashCode(callSuper = true)
+public class Employee extends UserEntity {
 
     @Column(unique = true, nullable = false)
     private String matricule;
@@ -29,9 +27,8 @@ public class Employee {
     @JoinColumn(name = "badge_id")
     private Badge badge;
 
-    @OneToOne(mappedBy = "employee")
-    private User user;
-
-
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
 }
+

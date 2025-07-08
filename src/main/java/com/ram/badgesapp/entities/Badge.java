@@ -3,8 +3,8 @@ package com.ram.badgesapp.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -18,9 +18,9 @@ public class Badge {
 
     private String code;
 
-    private Date issuedDate;
+    private LocalDate issuedDate;
 
-    private Date expiryDate;
+    private LocalDate expiryDate;
 
     @OneToMany(mappedBy = "badge", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BadgeAirport> accesList = new ArrayList<>();
