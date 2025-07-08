@@ -37,4 +37,26 @@ public class CompanyController {
         return ResponseEntity.ok(companyMapper.toDTO(saved));
 
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CompanyDTO> getCompanyById(@PathVariable Long id) {
+        Company company = companyService.getCompanyById(id);
+        return ResponseEntity.ok(companyMapper.toDTO(company));
+
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteCompanyById(@PathVariable Long id) {
+        companyService.deleteCompany(id);
+        return ResponseEntity.ok("Company deleted successfully with id: " + id);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CompanyDTO> updateCompanyById(@PathVariable Long id, @RequestBody CompanyDTO companyDTO) {
+        Company company = companyMapper.toEntity(companyDTO);
+        Company updated = companyService.updateCompany(id,company);
+        return ResponseEntity.ok(companyMapper.toDTO(updated));
+
+
+    }
 }

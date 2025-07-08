@@ -6,7 +6,6 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CompanyService {
@@ -20,7 +19,7 @@ public class CompanyService {
         return companyRepo.findAll();
     }
 
-    public Company getCompany(Long id) {
+    public Company getCompanyById(Long id) {
         return companyRepo.findById(id)
                 .orElseThrow(()-> new EntityNotFoundException("Company not found with id: "+ id));
     }
@@ -33,16 +32,25 @@ public class CompanyService {
         companyRepo.deleteById(id);
     }
 
-    public  Company updateCompany(Long id, Company company) {
-        Optional<Company> currentCompany = companyRepo.findById(id);
-        if (currentCompany.isPresent()) {
-            Company currentCompanyEntity = currentCompany.get();
-            currentCompanyEntity.setName(company.getName());
-            currentCompanyEntity.setDescription(company.getDescription());
-            currentCompanyEntity.setAddress(company.getAddress());
-            currentCompanyEntity.setPhone(company.getPhone());
-            companyRepo.save(currentCompanyEntity);
+    public Company updateCompany(Long id, Company company) {
+        Company comp = companyRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Company not found with id: " + id));
+
+        if (company.getName() != null) {
+            comp.setName(company.getName());
         }
-        return company;
+        if (company.getAddress() != null) {
+            comp.setAddress(company.getAddress());
+        }
+        if (company.getPhone() != null) {
+            comp.setPhone(company.getPhone());
+        }
+        if (company.getDescription() != null) {
+            comp.setDescription(company.getDescription());
+        }
+
+        companyRepo.save(comp);
+        return comp;
     }
+
 }
