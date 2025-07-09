@@ -1,15 +1,11 @@
 package com.ram.badgesapp.services;
 
-import com.ram.badgesapp.dto.AirportDTO;
 import com.ram.badgesapp.entities.Airport;
-import com.ram.badgesapp.entities.Company;
 import com.ram.badgesapp.repos.AirportRepo;
-import com.ram.badgesapp.repos.CompanyRepo;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class AirportService {
@@ -32,4 +28,27 @@ public class AirportService {
         return airportRepo.save(airport);
     }
 
+    public Airport updateAirport(Long id, Airport airport){
+        Airport air = airportRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Airport with id " + id + " not found!"));
+        if (airport.getName() != null) {
+            air.setName(airport.getName());
+        }
+        if (airport.getCity() != null) {
+            air.setCity(airport.getCity());
+        }
+        if (airport.getCountry() != null) {
+            air.setCountry(airport.getCountry());
+        }
+        if(airport.getIATA() != null){
+            air.setIATA(airport.getIATA());
+
+        }
+        airportRepo.save(air);
+        return air;
+    }
+
+    public void deleteAirport(Long id){
+        airportRepo.deleteById(id);
+    }
 }
