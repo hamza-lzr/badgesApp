@@ -20,8 +20,8 @@ public class Requests {
     private ReqStatus reqStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "employee_id", nullable = false)
-    private Employee employee;
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
     private LocalDateTime createdAt;
 

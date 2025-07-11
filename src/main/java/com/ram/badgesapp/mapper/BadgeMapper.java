@@ -11,12 +11,12 @@ import org.mapstruct.Mapping;
 public interface BadgeMapper {
 
     @Mapping(target = "company", source = "companyId", qualifiedByName = "companyFromId")
-    @Mapping(target = "employee", source = "employeeId", qualifiedByName = "employeeFromId")
+    @Mapping(target = "user", source = "userId", qualifiedByName = "userFromId")
     @Mapping(target = "accesList", ignore = true)
     Badge toEntity(BadgeDTO dto);
 
     @Mapping(target = "companyId", source = "company.id")
-    @Mapping(target = "employeeId", source = "employee.id")
+    @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "accessListIds", expression = "java(badge.getAccesList().stream().map(access -> access.getId()).collect(java.util.stream.Collectors.toList()))")
     BadgeDTO toDTO(Badge badge);
 }

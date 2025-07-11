@@ -24,7 +24,7 @@ public class Company {
     private String description;
 
     @OneToMany(mappedBy = "company")
-    private List<Employee> employees = new ArrayList<>();
+    private List<UserEntity> users = new ArrayList<>();
 
     @OneToMany(mappedBy = "company")
     private List<Badge> badges = new ArrayList<>();

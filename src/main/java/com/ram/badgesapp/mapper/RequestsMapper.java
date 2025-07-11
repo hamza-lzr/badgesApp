@@ -8,12 +8,12 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface RequestsMapper {
 
-    @Mapping(target = "employee", ignore = true)
+    @Mapping(target = "user", ignore = true)
     @Mapping(target = "id", ignore = true)         // géré par la BDD
     @Mapping(target = "createdAt", ignore = true)  // géré par le service ou la BDD
     Requests toEntity(RequestsDTO dto);
 
-    @Mapping(source = "employee.id", target = "employeeId")
+    @Mapping(source = "user.id", target = "userId")
     RequestsDTO toDTO(Requests entity);
 
 

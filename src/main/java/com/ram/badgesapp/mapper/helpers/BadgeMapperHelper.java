@@ -1,9 +1,9 @@
 package com.ram.badgesapp.mapper.helpers;
 
 import com.ram.badgesapp.entities.Company;
-import com.ram.badgesapp.entities.Employee;
+import com.ram.badgesapp.entities.UserEntity;
 import com.ram.badgesapp.repos.CompanyRepo;
-import com.ram.badgesapp.repos.EmployeeRepo;
+import com.ram.badgesapp.repos.UserEntityRepo;
 import org.mapstruct.Named;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,7 @@ public class BadgeMapperHelper {
     private CompanyRepo companyRepository;
 
     @Autowired
-    private EmployeeRepo employeeRepository;
+    private UserEntityRepo userEntityRepository;
 
     @Named("companyFromId")
     public Company companyFromId(Long id) {
@@ -24,10 +24,10 @@ public class BadgeMapperHelper {
                 .orElseThrow(() -> new RuntimeException("Company not found with id: " + id));
     }
 
-    @Named("employeeFromId")
-    public Employee employeeFromId(Long id) {
+    @Named("userFromId")
+    public UserEntity userFromId(Long id) {
         if (id == null) return null;
-        return employeeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
+        return userEntityRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
     }
 }

@@ -38,7 +38,7 @@ public class RequestsService {
         Requests req = requestsRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Request not found with id " + id));
         if(request.getDescription() != null) req.setDescription(request.getDescription());
-        if(request.getEmployee() != null) req.setEmployee(request.getEmployee());
+        if(request.getUser() != null) req.setUser(request.getUser());
         if(request.getReqType() != null) req.setReqType(request.getReqType());
         if(request.getReqStatus() != null) req.setReqStatus(request.getReqStatus());
         return requestsRepo.save(req);

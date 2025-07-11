@@ -15,7 +15,7 @@ public class RequestsDTO {
 
     private ReqStatus reqStatus;
 
-    private Long employeeId;
+    private Long userId;
 
     private LocalDateTime createdAt;
 

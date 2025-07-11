@@ -48,8 +48,8 @@ public class BadgeService {
         if(badge.getCompany() != null){
             b.setCompany(badge.getCompany());
         }
-        if(badge.getEmployee() != null){
-            b.setEmployee(badge.getEmployee());
+        if(badge.getUser() != null){
+            b.setUser(badge.getUser());
         }
         badgeRepo.save(b);
         return b;

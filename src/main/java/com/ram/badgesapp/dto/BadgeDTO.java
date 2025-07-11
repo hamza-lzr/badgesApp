@@ -19,7 +19,7 @@ public class BadgeDTO {
 
     private Long companyId;
 
-    private Long employeeId;
+    private Long userId;
 
     private List<Long> accessListIds;
 

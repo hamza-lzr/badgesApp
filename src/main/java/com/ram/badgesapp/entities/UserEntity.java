@@ -3,11 +3,11 @@ package com.ram.badgesapp.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
 @Data
-public abstract class UserEntity {
+public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -21,6 +21,22 @@ public abstract class UserEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Column(unique = true, nullable = false)
+    private String matricule;
+
+    private String firstName;
+
+    private String lastName;
+
+    private String phone;
+
+    @ManyToOne
+    private Company company;
+
+    @OneToMany(mappedBy = "user")
+    private List<Badge> badge;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
 }
-
