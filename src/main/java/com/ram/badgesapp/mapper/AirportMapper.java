@@ -8,7 +8,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface AirportMapper {
 
-    @Mapping(target = "badgeAirports", ignore = true)
+    @Mapping(target = "accesses", ignore = true)
     Airport toEntity(AirportDTO dto);
 
     AirportDTO toDTO(Airport airport);

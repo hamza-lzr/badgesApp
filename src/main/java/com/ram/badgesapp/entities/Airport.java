@@ -25,7 +25,7 @@ public class Airport {
     private String country;
 
     @OneToMany(mappedBy = "airport")
-    private List<BadgeAirport> badgeAirports = new ArrayList<>();
+    private List<Access> accesses = new ArrayList<>();
 
 
 }

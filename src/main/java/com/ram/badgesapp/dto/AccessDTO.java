@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class BadgeAirportDTO {
+public class AccessDTO {
 
     private Long id;
 

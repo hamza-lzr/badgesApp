@@ -23,7 +23,7 @@ public class Badge {
     private LocalDate expiryDate;
 
     @OneToMany(mappedBy = "badge", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BadgeAirport> accesList = new ArrayList<>();
+    private List<Access> accesList = new ArrayList<>();
 
     @ManyToOne
     private Company company;

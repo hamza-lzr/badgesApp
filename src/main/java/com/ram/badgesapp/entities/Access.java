@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Entity
 @Table
 @Data
-public class BadgeAirport {
+public class Access {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

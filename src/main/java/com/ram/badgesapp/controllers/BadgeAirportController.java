@@ -1,10 +1,10 @@
 package com.ram.badgesapp.controllers;
 
 
-import com.ram.badgesapp.dto.BadgeAirportDTO;
-import com.ram.badgesapp.entities.BadgeAirport;
-import com.ram.badgesapp.mapper.BadgeAirportMapper;
-import com.ram.badgesapp.services.BadgeAirportService;
+import com.ram.badgesapp.dto.AccessDTO;
+import com.ram.badgesapp.entities.Access;
+import com.ram.badgesapp.mapper.AccessMapper;
+import com.ram.badgesapp.services.AccessService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,57 +15,57 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class BadgeAirportController {
 
-    private final BadgeAirportService badgeAirportService;
-    private final BadgeAirportMapper badgeAirportMapper;
-    public BadgeAirportController(BadgeAirportService badgeAirportService, BadgeAirportMapper badgeAirportMapper) {
-        this.badgeAirportService = badgeAirportService;
-        this.badgeAirportMapper = badgeAirportMapper;
+    private final AccessService accessService;
+    private final AccessMapper accessMapper;
+    public BadgeAirportController(AccessService accessService, AccessMapper accessMapper) {
+        this.accessService = accessService;
+        this.accessMapper = accessMapper;
     }
 
     @GetMapping
-    public ResponseEntity<List<BadgeAirportDTO>> getAllAccesses() {
-        return ResponseEntity.ok(badgeAirportService.getAllAccesses().stream()
-                .map(badgeAirportMapper::toDTO)
+    public ResponseEntity<List<AccessDTO>> getAllAccesses() {
+        return ResponseEntity.ok(accessService.getAllAccesses().stream()
+                .map(accessMapper::toDTO)
                 .toList()
         );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BadgeAirportDTO> getAccessById(@PathVariable Long id) {
-        return ResponseEntity.ok(badgeAirportMapper.toDTO(badgeAirportService.getAccessById(id)));
+    public ResponseEntity<AccessDTO> getAccessById(@PathVariable Long id) {
+        return ResponseEntity.ok(accessMapper.toDTO(accessService.getAccessById(id)));
     }
 
     @GetMapping("/badge/{id}")
-    public ResponseEntity<List<BadgeAirportDTO>> getAccessesByBadgeId(@PathVariable Long id) {
-        return ResponseEntity.ok(badgeAirportService.getAccessesByBadgeId(id).stream()
-                .map(badgeAirportMapper::toDTO)
+    public ResponseEntity<List<AccessDTO>> getAccessesByBadgeId(@PathVariable Long id) {
+        return ResponseEntity.ok(accessService.getAccessesByBadgeId(id).stream()
+                .map(accessMapper::toDTO)
                 .toList()
         );
     }
 
     @GetMapping("/airport/{id}")
-    public ResponseEntity<List<BadgeAirportDTO>> getAccessesByAirportId(@PathVariable Long id) {
-        return ResponseEntity.ok(badgeAirportService.getAccessesByAirportId(id).stream()
-                .map(badgeAirportMapper::toDTO)
+    public ResponseEntity<List<AccessDTO>> getAccessesByAirportId(@PathVariable Long id) {
+        return ResponseEntity.ok(accessService.getAccessesByAirportId(id).stream()
+                .map(accessMapper::toDTO)
                 .toList()
         );
     }
 
     @PostMapping
-    public ResponseEntity<BadgeAirportDTO> createAccess(@RequestBody BadgeAirportDTO badgeAirportDTO) {
-        BadgeAirport badgeAirport = badgeAirportMapper.toEntity(badgeAirportDTO);
-        return ResponseEntity.ok(badgeAirportMapper.toDTO(badgeAirportService.addAccess(badgeAirport)));
+    public ResponseEntity<AccessDTO> createAccess(@RequestBody AccessDTO accessDTO) {
+        Access access = accessMapper.toEntity(accessDTO);
+        return ResponseEntity.ok(accessMapper.toDTO(accessService.addAccess(access)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BadgeAirportDTO> updateAccessById(@PathVariable Long id, @RequestBody BadgeAirportDTO badgeAirportDTO) {
-        BadgeAirport badgeAirport = badgeAirportMapper.toEntity(badgeAirportDTO);
-        return ResponseEntity.ok(badgeAirportMapper.toDTO(badgeAirportService.updateAccess(id,badgeAirport)));
+    public ResponseEntity<AccessDTO> updateAccessById(@PathVariable Long id, @RequestBody AccessDTO accessDTO) {
+        Access access = accessMapper.toEntity(accessDTO);
+        return ResponseEntity.ok(accessMapper.toDTO(accessService.updateAccess(id, access)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteAccessById(@PathVariable Long id) {
-        badgeAirportService.removeAccess(id);
+        accessService.removeAccess(id);
         return ResponseEntity.noContent().build();
     }
 }
