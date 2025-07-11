@@ -6,7 +6,7 @@ import lombok.Data;
 public class AirportDTO {
 
     private Long id;
-    private String IATA;
+    private String iata;
     private String name;
     private String city;
     private String country;

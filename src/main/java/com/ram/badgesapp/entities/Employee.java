@@ -23,8 +23,7 @@ public class Employee extends UserEntity {
     @JoinColumn(name = "company_id")
     private Company company;
 
-    @OneToOne
-    @JoinColumn(name = "badge_id")
+    @OneToOne(mappedBy = "employee")
     private Badge badge;
 
     @Enumerated(EnumType.STRING)

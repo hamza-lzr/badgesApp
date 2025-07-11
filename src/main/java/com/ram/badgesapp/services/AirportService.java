@@ -40,8 +40,8 @@ public class AirportService {
         if (airport.getCountry() != null) {
             air.setCountry(airport.getCountry());
         }
-        if(airport.getIATA() != null){
-            air.setIATA(airport.getIATA());
+        if(airport.getIata() != null){
+            air.setIata(airport.getIata());
 
         }
         airportRepo.save(air);

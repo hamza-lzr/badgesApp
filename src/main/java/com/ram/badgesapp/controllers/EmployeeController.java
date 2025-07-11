@@ -54,7 +54,7 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeMapper.toDTO(updated));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id}/status")
     public ResponseEntity<EmployeeDTO> updateEmployeeStatusById(@PathVariable Long id, @RequestBody EmployeeDTO employeeDTO) {
         Employee employee = employeeMapper.toEntity(employeeDTO);
         Employee updated = employeeService.updateEmployeeStatus(id,employee);
@@ -71,9 +71,9 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeMapper.toDTO(updated));
     }
 
-    @PutMapping("/{id}/company")
-    public ResponseEntity<EmployeeDTO> addOrUpdateEmployeeCompanyById(@PathVariable Long id, @RequestBody Long idBadge){
-        Employee updated = employeeService.addOrUpdateEmployeeCompany(id,idBadge);
+    @PutMapping("/{id}/company/{idComp}")
+    public ResponseEntity<EmployeeDTO> addOrUpdateEmployeeCompanyById(@PathVariable Long id, @PathVariable Long idComp){
+        Employee updated = employeeService.addOrUpdateEmployeeCompany(id,idComp);
         return ResponseEntity.ok(employeeMapper.toDTO(updated));
     }
 }

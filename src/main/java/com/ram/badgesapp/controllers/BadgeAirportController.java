@@ -57,6 +57,15 @@ public class BadgeAirportController {
         return ResponseEntity.ok(badgeAirportMapper.toDTO(badgeAirportService.addAccess(badgeAirport)));
     }
 
-    //TO-DO
+    @PutMapping("/{id}")
+    public ResponseEntity<BadgeAirportDTO> updateAccessById(@PathVariable Long id, @RequestBody BadgeAirportDTO badgeAirportDTO) {
+        BadgeAirport badgeAirport = badgeAirportMapper.toEntity(badgeAirportDTO);
+        return ResponseEntity.ok(badgeAirportMapper.toDTO(badgeAirportService.updateAccess(id,badgeAirport)));
+    }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteAccessById(@PathVariable Long id) {
+        badgeAirportService.removeAccess(id);
+        return ResponseEntity.noContent().build();
+    }
 }

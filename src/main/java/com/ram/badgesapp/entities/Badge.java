@@ -28,8 +28,10 @@ public class Badge {
     @ManyToOne
     private Company company;
 
-    @OneToOne(mappedBy = "badge")
+    @OneToOne
+    @JoinColumn(name = "employee_id")
     private Employee employee;
+
 
 
 

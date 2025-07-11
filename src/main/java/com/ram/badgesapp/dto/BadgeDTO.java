@@ -13,9 +13,9 @@ public class BadgeDTO {
 
     private String code;
 
-    private Date issuedDate;
+    private String issuedDate;
 
-    private Date expiryDate;
+    private String expiryDate;
 
     private Long companyId;
 
