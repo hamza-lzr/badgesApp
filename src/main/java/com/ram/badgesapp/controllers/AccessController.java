@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/badge-airport")
+@RequestMapping("/access")
 @CrossOrigin(origins = "*")
-public class BadgeAirportController {
+public class AccessController {
 
     private final AccessService accessService;
     private final AccessMapper accessMapper;
-    public BadgeAirportController(AccessService accessService, AccessMapper accessMapper) {
+    public AccessController(AccessService accessService, AccessMapper accessMapper) {
         this.accessService = accessService;
         this.accessMapper = accessMapper;
     }
