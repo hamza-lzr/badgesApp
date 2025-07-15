@@ -37,9 +37,8 @@ public class AirportService {
         if (airport.getCity() != null) {
             air.setCity(airport.getCity());
         }
-        if (airport.getCountry() != null) {
-            air.setCountry(airport.getCountry());
-        }
+
+
         if(airport.getIata() != null){
             air.setIata(airport.getIata());
 

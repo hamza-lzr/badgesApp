@@ -20,9 +20,9 @@ public class Airport {
 
     private String name;
 
-    private String city;
-
-    private String country;
+    @ManyToOne
+    @JoinColumn(name = "city_id")
+    private City city;
 
     @OneToMany(mappedBy = "airport")
     private List<Access> accesses = new ArrayList<>();

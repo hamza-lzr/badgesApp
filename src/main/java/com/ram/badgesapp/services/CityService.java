@@ -1,6 +1,7 @@
 package com.ram.badgesapp.services;
 
 import com.ram.badgesapp.entities.City;
+import com.ram.badgesapp.entities.Country;
 import com.ram.badgesapp.repos.CityRepo;
 import org.springframework.stereotype.Service;
 
@@ -39,5 +40,11 @@ public class CityService {
         if(city.getCountry() != null) c.setCountry(city.getCountry());
         return cityRepo.save(c);
     }
+
+    public List<City> getCitiesByCountry(Long id){
+        return cityRepo.findAllByCountry_Id(id)
+                ;
+    }
+
 
 }

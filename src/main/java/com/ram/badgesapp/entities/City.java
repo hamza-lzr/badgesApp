@@ -3,6 +3,8 @@ package com.ram.badgesapp.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Entity
 @Table
 @Data
@@ -17,5 +19,8 @@ public class City {
     @ManyToOne
     @JoinColumn(name = "country_id")
     private Country country;
+
+    @OneToMany(mappedBy = "city")
+    private List<Airport> airports;
 
 }

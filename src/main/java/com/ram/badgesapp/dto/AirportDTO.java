@@ -8,7 +8,6 @@ public class AirportDTO {
     private Long id;
     private String iata;
     private String name;
-    private String city;
-    private String country;
+    private Long cityId;
 
 }
