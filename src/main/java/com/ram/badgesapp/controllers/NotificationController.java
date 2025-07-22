@@ -2,8 +2,13 @@ package com.ram.badgesapp.controllers;
 
 import com.ram.badgesapp.dto.NotificationDTO;
 import com.ram.badgesapp.mapper.NotificationMapper;
+import com.ram.badgesapp.repos.UserEntityRepo;
 import com.ram.badgesapp.services.NotificationService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,9 +20,11 @@ public class NotificationController {
 
     private final NotificationService notificationService;
     private final NotificationMapper notificationMapper;
-    public NotificationController(NotificationService notificationService, NotificationMapper notificationMapper) {
+    private final UserEntityRepo userEntityRepo;
+    public NotificationController(NotificationService notificationService, NotificationMapper notificationMapper, UserEntityRepo userEntityRepo) {
         this.notificationService = notificationService;
         this.notificationMapper = notificationMapper;
+        this.userEntityRepo = userEntityRepo;
     }
 
     @GetMapping
@@ -50,6 +57,58 @@ public class NotificationController {
                 .map(notificationMapper::toDTO)
                 .toList());
     }
+
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
+    public List<NotificationDTO> getMyNotifications(@AuthenticationPrincipal Jwt jwt) {
+
+        // ✅ Extract Keycloak UUID from token
+        String keycloakUserId = jwt.getSubject();
+
+        // ✅ Map Keycloak UUID → internal UserEntity.id
+        Long internalUserId = userEntityRepo.findByKeycloakId(keycloakUserId)
+                .getId();
+
+        // ✅ Fetch & return only that user's notifications
+        return notificationService.getNotificationsByUserId(internalUserId)
+                .stream()
+                .map(notification -> {
+                    NotificationDTO dto = new NotificationDTO();
+                    dto.setId(notification.getId());
+                    dto.setMessage(notification.getMessage());
+                    dto.setRead(notification.isRead());
+                    dto.setCreatedAt(notification.getCreatedAt());
+                    dto.setUserId(notification.getUser().getId());
+                    return dto;
+                })
+                .toList();
+    }
+
+    @PutMapping("/mark-all-read")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
+    public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal Jwt jwt) {
+
+        // Get the Keycloak user ID (UUID)
+        String keycloakUserId = jwt.getSubject();
+
+        // Map Keycloak UUID -> your internal userId
+        Long internalUserId = userEntityRepo.findByKeycloakId(keycloakUserId)
+                .getId();
+
+        // Update all notifications for this user
+        notificationService.markAllAsReadForUser(internalUserId);
+
+        return ResponseEntity.ok().build();
+    }
+
+
+
+    @PutMapping("/{id}/read")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public NotificationDTO markAsRead(@PathVariable Long id) {
+        return notificationMapper.toDTO(notificationService.updateNotificationRead(id));
+    }
+
 
     @PatchMapping("/{id}")
     ResponseEntity<NotificationDTO> updateNotificationRead(@PathVariable Long id){

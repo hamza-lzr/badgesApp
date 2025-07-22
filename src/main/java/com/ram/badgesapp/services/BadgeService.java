@@ -2,6 +2,7 @@ package com.ram.badgesapp.services;
 
 import com.ram.badgesapp.entities.Badge;
 import com.ram.badgesapp.repos.BadgeRepo;
+import com.ram.badgesapp.repos.UserEntityRepo;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,7 @@ public class BadgeService {
 
     private final BadgeRepo badgeRepo;
 
-    public BadgeService(BadgeRepo badgeRepo){
+    public BadgeService(BadgeRepo badgeRepo) {
         this.badgeRepo = badgeRepo;
     }
 
@@ -62,6 +63,11 @@ public class BadgeService {
             b.setExpiryDate(badge.getExpiryDate());
         }
         return badgeRepo.save(b);
+    }
+
+    public List<Badge> getBadgesByUserId(Long userId){
+        return badgeRepo.findAllByUser_Id(userId);
+
     }
 
 }
