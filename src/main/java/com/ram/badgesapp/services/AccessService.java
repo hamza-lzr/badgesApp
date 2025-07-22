@@ -60,4 +60,8 @@ public class AccessService {
     public List<Access> getAllAccesses(){
         return accessRepo.findAll();
     }
+
+    public List<Access> getAccessesByUserId(Long id){
+        return accessRepo.findAllByBadge_User_Id(id);
+    }
 }

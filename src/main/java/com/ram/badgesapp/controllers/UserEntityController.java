@@ -6,6 +6,8 @@ import com.ram.badgesapp.mapper.UserMapper;
 import com.ram.badgesapp.services.UserEntityService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import com.ram.badgesapp.config.KeycloakAdminService;
 
@@ -117,4 +119,13 @@ public class UserEntityController {
     public ResponseEntity<UserDTO> getUserByKeycloakId(@PathVariable String id) {
         return ResponseEntity.ok(userMapper.toDTO(userEntityService.getUserByKeycloakId(id)));
     }
+
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
+    public ResponseEntity<UserDTO> getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
+        String keycloakId = jwt.getSubject();
+        UserEntity user = userEntityService.getUserByKeycloakId(keycloakId);
+        return ResponseEntity.ok(userMapper.toDTO(user));
+    }
+
 }

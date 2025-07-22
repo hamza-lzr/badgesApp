@@ -61,7 +61,7 @@ public class NotificationService {
 
     }
 
-    @Scheduled(cron = "0 0 * * * ?")
+    @Scheduled(cron = "0 0 8 * * ?")
     public void checkExpiringBadgesAndAccesses() {
         LocalDate today = LocalDate.now();
         LocalDate oneWeekFromNow = today.plusDays(7);

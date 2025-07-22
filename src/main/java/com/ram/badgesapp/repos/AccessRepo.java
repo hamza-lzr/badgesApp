@@ -14,4 +14,6 @@ public interface AccessRepo extends JpaRepository<Access, Long> {
     List<Access> findAllByAirport_Id(Long airportId);
 
     List<Access> findByEndDateBetween(LocalDate today, LocalDate oneWeekFromNow);
+
+    List<Access> findAllByBadge_User_Id(Long badgeUserId);
 }
