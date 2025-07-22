@@ -39,4 +39,7 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Column(unique = true)
+    private String keycloakId;
+
 }

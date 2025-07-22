@@ -6,6 +6,7 @@ import com.ram.badgesapp.entities.Access;
 import com.ram.badgesapp.mapper.AccessMapper;
 import com.ram.badgesapp.services.AccessService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class AccessController {
         this.accessMapper = accessMapper;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<AccessDTO>> getAllAccesses() {
         return ResponseEntity.ok(accessService.getAllAccesses().stream()
@@ -30,6 +32,7 @@ public class AccessController {
         );
     }
 
+    @PreAuthorize("hasRole('ADMIN, EMPLOYEE')")
     @GetMapping("/{id}")
     public ResponseEntity<AccessDTO> getAccessById(@PathVariable Long id) {
         return ResponseEntity.ok(accessMapper.toDTO(accessService.getAccessById(id)));

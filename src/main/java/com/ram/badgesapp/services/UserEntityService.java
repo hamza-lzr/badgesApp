@@ -6,6 +6,8 @@ import com.ram.badgesapp.entities.UserEntity;
 import com.ram.badgesapp.repos.BadgeRepo;
 import com.ram.badgesapp.repos.UserEntityRepo;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -100,6 +102,39 @@ public class UserEntityService {
         emp.setCompany(company);
         return userEntityRepo.save(emp);
     }
+
+    public UserEntity getUserByKeycloakId(String id){
+        return userEntityRepo.findByKeycloakId(id);
+    }
+
+    public UserEntity getCurrentEmployee(JwtAuthenticationToken auth) {
+        String keycloakSub = auth.getToken().getSubject(); // 'sub' claim
+        return userEntityRepo.findByKeycloakId(keycloakSub);
+    }
+
+    public boolean canAccessEmployee(Authentication auth, Long requestedId) {
+        // Admins can access anyone
+        if (auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            return true;
+        }
+
+        // Get Keycloak user ID from JWT
+        JwtAuthenticationToken jwtAuth = (JwtAuthenticationToken) auth;
+        String keycloakSub = jwtAuth.getToken().getSubject();
+
+        // Fetch employee directly
+        UserEntity emp = userEntityRepo.findByKeycloakId(keycloakSub);
+
+        // If no employee found → deny access
+        if (emp == null) {
+            return false;
+        }
+
+        // Allow only if the requested ID matches the logged-in employee’s ID
+        return emp.getId().equals(requestedId);
+    }
+
 
 
 
