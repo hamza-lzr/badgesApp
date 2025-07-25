@@ -58,5 +58,9 @@ public class RequestsService {
         return requestsRepo.save(req);
     }
 
+    public List<Requests> getRequestsByEmployeeId(Long id){
+        return requestsRepo.findAllByUser_Id(id);
+    }
+
 
 }
