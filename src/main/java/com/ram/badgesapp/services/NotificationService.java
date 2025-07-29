@@ -3,10 +3,9 @@ package com.ram.badgesapp.services;
 import com.ram.badgesapp.entities.Access;
 import com.ram.badgesapp.entities.Badge;
 import com.ram.badgesapp.entities.Notification;
-import com.ram.badgesapp.repos.AccessRepo;
-import com.ram.badgesapp.repos.BadgeRepo;
-import com.ram.badgesapp.repos.NotificationRepo;
-import com.ram.badgesapp.repos.UserEntityRepo;
+import com.ram.badgesapp.entities.ReqStatus;
+import com.ram.badgesapp.entities.Requests;
+import com.ram.badgesapp.repos.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -22,12 +21,14 @@ public class NotificationService {
     private final BadgeRepo badgeRepo;
     private final AccessRepo accessRepo;
     private final UserEntityRepo userEntityRepo;
+    private final RequestsRepo requestsRepo;
 
-    public NotificationService(NotificationRepo notificationRepo, BadgeRepo badgeRepo, AccessRepo accessRepo, UserEntityRepo userEntityRepo) {
+    public NotificationService(NotificationRepo notificationRepo, BadgeRepo badgeRepo, AccessRepo accessRepo, UserEntityRepo userEntityRepo, RequestsRepo requestsRepo) {
         this.notificationRepo = notificationRepo;
         this.badgeRepo = badgeRepo;
         this.accessRepo = accessRepo;
         this.userEntityRepo = userEntityRepo;
+        this.requestsRepo = requestsRepo;
     }
 
     public List<Notification> getAllNotifications() {
@@ -111,6 +112,33 @@ public class NotificationService {
             }
         }
         notificationRepo.saveAll(notifications);
+    }
+    
+    /**
+     * Sends a notification to a user when their request status changes from pending to approved or rejected
+     * @param requestId The ID of the request that has changed status
+     * @param oldStatus The previous status of the request
+     * @param newStatus The new status of the request
+     */
+    public void notifyAboutRequestStatus(Long requestId, ReqStatus oldStatus, ReqStatus newStatus) {
+        // Only send notification if status changed from PENDING to APPROVED or REJECTED
+        if (oldStatus == ReqStatus.PENDING && (newStatus == ReqStatus.APPROVED || newStatus == ReqStatus.REJECTED)) {
+            // Get the request to access user information
+            Requests request = requestsRepo.findById(requestId)
+                    .orElseThrow(() -> new EntityNotFoundException("Request not found with id: " + requestId));
+            
+            // Create appropriate message based on new status
+            String statusText = newStatus == ReqStatus.APPROVED ? "approved" : "rejected";
+            String message = String.format(
+                    "Your request has been %s. Request type: %s, Description: %s",
+                    statusText,
+                    request.getReqType(),
+                    request.getDescription()
+            );
+            
+            // Send notification to the user
+            createNotificationForUser(request.getUser().getId(), message);
+        }
     }
 
 

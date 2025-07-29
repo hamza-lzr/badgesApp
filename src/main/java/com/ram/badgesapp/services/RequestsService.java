@@ -13,8 +13,11 @@ import java.util.List;
 public class RequestsService {
 
     private final RequestsRepo requestsRepo;
-    public RequestsService(RequestsRepo requestsRepo) {
+    private final NotificationService notificationService;
+    
+    public RequestsService(RequestsRepo requestsRepo, NotificationService notificationService) {
         this.requestsRepo = requestsRepo;
+        this.notificationService = notificationService;
     }
 
     public List<Requests> getAllRequests() {
@@ -54,8 +57,18 @@ public class RequestsService {
     public Requests updateReqStatus(Long id, ReqStatus reqStatus) {
         Requests req = requestsRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Request not found with id " + id));
+        
+        // Store the old status before updating
+        ReqStatus oldStatus = req.getReqStatus();
+        
+        // Update the status
         req.setReqStatus(reqStatus);
-        return requestsRepo.save(req);
+        Requests updatedRequest = requestsRepo.save(req);
+        
+        // Notify the user about the status change
+        notificationService.notifyAboutRequestStatus(id, oldStatus, reqStatus);
+        
+        return updatedRequest;
     }
 
     public List<Requests> getRequestsByEmployeeId(Long id){
