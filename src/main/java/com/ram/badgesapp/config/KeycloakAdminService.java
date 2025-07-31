@@ -13,6 +13,8 @@ import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.admin.client.CreatedResponseUtil;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -78,6 +80,40 @@ public class KeycloakAdminService {
                 .add(List.of(realmRole));
 
         return userId; // UUID of created user
+    }
+    
+    /**
+     * Changes the password for a Keycloak user
+     * 
+     * @param keycloakId The Keycloak UUID of the user
+     * @param newPassword The new password to set
+     * @throws ResponseStatusException if the user is not found or the password change fails
+     */
+    public void changePassword(String keycloakId, String newPassword) {
+        try {
+            // Create credential representation
+            CredentialRepresentation credentials = new CredentialRepresentation();
+            credentials.setTemporary(false);
+            credentials.setType(CredentialRepresentation.PASSWORD);
+            credentials.setValue(newPassword);
+            
+            // Get user resource and reset password
+            UserResource userResource = keycloak.realm(targetRealm).users().get(keycloakId);
+            if (userResource == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found in Keycloak");
+            }
+            
+            userResource.resetPassword(credentials);
+        } catch (Exception e) {
+            if (e instanceof ResponseStatusException) {
+                throw e;
+            }
+            throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Failed to change password: " + e.getMessage(), 
+                e
+            );
+        }
     }
 }
 

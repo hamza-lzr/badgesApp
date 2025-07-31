@@ -10,8 +10,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import com.ram.badgesapp.config.KeycloakAdminService;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -126,6 +128,42 @@ public class UserEntityController {
         String keycloakId = jwt.getSubject();
         UserEntity user = userEntityService.getUserByKeycloakId(keycloakId);
         return ResponseEntity.ok(userMapper.toDTO(user));
+    }
+    
+    /**
+     * Endpoint for changing the current user's password
+     * 
+     * @param auth The JWT authentication token
+     * @param passwordData Map containing the new password
+     * @return ResponseEntity with success message
+     */
+    @PostMapping("/change-password")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> changePassword(
+            JwtAuthenticationToken auth,
+            @RequestBody Map<String, String> passwordData) {
+        
+        // Extract Keycloak ID from JWT token
+        String keycloakId = auth.getToken().getSubject();
+        
+        // Validate password data
+        String newPassword = passwordData.get("newPassword");
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "New password is required"));
+        }
+        
+        // Minimum password requirements check
+        if (newPassword.length() < 8) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Password must be at least 8 characters long"));
+        }
+        
+        // Change password in Keycloak
+        keycloakAdminService.changePassword(keycloakId, newPassword);
+        
+        // Return success response
+        return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
     }
 
 }
