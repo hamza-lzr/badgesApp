@@ -49,6 +49,9 @@ public class KeycloakAdminService {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setEnabled(true);
+        
+        // For EMPLOYEE role, enable email verification
+
 
         // 2️⃣ Create user in target realm
         Response response = keycloak.realm(targetRealm).users().create(user);
@@ -59,12 +62,14 @@ public class KeycloakAdminService {
         // 3️⃣ Get Keycloak UUID (userId)
         String userId = CreatedResponseUtil.getCreatedId(response);
 
-        // 4️⃣ Set initial password
-        CredentialRepresentation credentials = new CredentialRepresentation();
-        credentials.setTemporary(false);
-        credentials.setType(CredentialRepresentation.PASSWORD);
-        credentials.setValue(password);
-        keycloak.realm(targetRealm).users().get(userId).resetPassword(credentials);
+        // 4️⃣ Set initial password only for ADMIN users
+        if (!"EMPLOYEE".equals(roleName) && password != null && !password.isEmpty()) {
+            CredentialRepresentation credentials = new CredentialRepresentation();
+            credentials.setTemporary(false);
+            credentials.setType(CredentialRepresentation.PASSWORD);
+            credentials.setValue(password);
+            keycloak.realm(targetRealm).users().get(userId).resetPassword(credentials);
+        }
 
         // 5️⃣ Assign realm role
         RoleRepresentation realmRole = keycloak.realm(targetRealm)
@@ -78,6 +83,12 @@ public class KeycloakAdminService {
                 .roles()
                 .realmLevel()
                 .add(List.of(realmRole));
+        if ("EMPLOYEE".equals(roleName)) {
+            keycloak.realm(targetRealm)
+                    .users()
+                    .get(userId)
+                    .executeActionsEmail(List.of("VERIFY_EMAIL", "UPDATE_PASSWORD"));
+        }
 
         return userId; // UUID of created user
     }

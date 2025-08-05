@@ -58,14 +58,18 @@ public class UserEntityController {
         // Map DTO to Entity
         UserEntity userEntity = userMapper.toEntity(userDTO);
 
-        // Generate a default password (or get from DTO)
-        //String initialPassword = "changeme123";
+        // For ADMIN users, generate a default password; for EMPLOYEE users, set password to null
+        String initialPassword = null;
+        if ("ADMIN".equals(userEntity.getRole().name())) {
+            initialPassword = "changeme123"; // Default password for ADMIN users
+        }
+        // For EMPLOYEE users, password remains null and they'll receive an email to set it
 
         // ✅ Create user in Keycloak and get the UUID
         String keycloakId = keycloakAdminService.createKeycloakUser(
                 userEntity.getEmail(),          // username/email
                 userEntity.getEmail(),          // email
-                userEntity.getMatricule(),
+                initialPassword,                // password (null for EMPLOYEE)
                 userEntity.getRole().name(),    // Role: ADMIN or EMPLOYEE
                 userEntity.getFirstName(),
                 userEntity.getLastName()
