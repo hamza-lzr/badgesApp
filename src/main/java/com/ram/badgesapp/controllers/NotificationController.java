@@ -1,8 +1,10 @@
 package com.ram.badgesapp.controllers;
 
 import com.ram.badgesapp.dto.NotificationDTO;
+import com.ram.badgesapp.entities.UserEntity;
 import com.ram.badgesapp.mapper.NotificationMapper;
 import com.ram.badgesapp.repos.UserEntityRepo;
+import com.ram.badgesapp.services.KeycloakSyncService;
 import com.ram.badgesapp.services.NotificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,10 +23,13 @@ public class NotificationController {
     private final NotificationService notificationService;
     private final NotificationMapper notificationMapper;
     private final UserEntityRepo userEntityRepo;
-    public NotificationController(NotificationService notificationService, NotificationMapper notificationMapper, UserEntityRepo userEntityRepo) {
+    private final KeycloakSyncService keycloakSyncService;
+
+    public NotificationController(NotificationService notificationService, NotificationMapper notificationMapper, UserEntityRepo userEntityRepo,  KeycloakSyncService keycloakSyncService) {
         this.notificationService = notificationService;
         this.notificationMapper = notificationMapper;
         this.userEntityRepo = userEntityRepo;
+        this.keycloakSyncService = keycloakSyncService;
     }
 
     @GetMapping
@@ -66,8 +71,8 @@ public class NotificationController {
         String keycloakUserId = jwt.getSubject();
 
         // ✅ Map Keycloak UUID → internal UserEntity.id
-        Long internalUserId = userEntityRepo.findByKeycloakId(keycloakUserId)
-                .getId();
+        UserEntity user = keycloakSyncService.syncKeycloakUser(keycloakUserId); // 🔁 sync auto si inexistant
+        Long internalUserId = user.getId();
 
         // ✅ Fetch & return only that user's notifications
         return notificationService.getNotificationsByUserId(internalUserId)

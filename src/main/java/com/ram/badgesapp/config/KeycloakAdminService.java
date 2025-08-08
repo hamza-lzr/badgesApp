@@ -1,5 +1,6 @@
 package com.ram.badgesapp.config;
 
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
@@ -16,7 +17,9 @@ import org.keycloak.admin.client.CreatedResponseUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -126,6 +129,69 @@ public class KeycloakAdminService {
             );
         }
     }
+    /**
+     * Gets a user from Keycloak by their ID
+     * 
+     * @param userId The Keycloak UUID of the user
+     * @return The UserRepresentation or null if not found
+     */
+    public UserRepresentation getUserById(String userId) {
+        try {
+            return keycloak.realm(targetRealm).users().get(userId).toRepresentation();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    /**
+     * Gets all users from Keycloak
+     * 
+     * @return List of UserRepresentation objects
+     */
+    public List<UserRepresentation> getAllUsers() {
+        try {
+            return keycloak.realm(targetRealm).users().list();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Gets the roles assigned to a user in Keycloak
+     * 
+     * @param userId The Keycloak UUID of the user
+     * @return List of role names
+     */
+    public List<String> getUserRoles(String userId) {
+        try {
+            List<RoleRepresentation> roles = keycloak.realm(targetRealm)
+                    .users()
+                    .get(userId)
+                    .roles()
+                    .realmLevel()
+                    .listAll();
+            
+            return roles.stream()
+                    .map(RoleRepresentation::getName)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    public List<UserRepresentation> findUsersByRole(String roleName) {
+        try {
+            return keycloak.realm(targetRealm)
+                    .roles()
+                    .get(roleName)
+                    .getRoleUserMembers()
+                    .stream().toList();
+        } catch (NotFoundException e) {
+            // This handles the case where the role itself doesn't exist in Keycloak.
+            return List.of();
+        }
+    }
+
 }
 
 

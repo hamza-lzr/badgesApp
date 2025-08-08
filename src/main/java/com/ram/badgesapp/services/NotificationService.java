@@ -94,7 +94,7 @@ public class NotificationService {
         }
     }
 
-    private void createNotificationForUser(Long userId, String message) {
+    public void createNotificationForUser(Long userId, String message) {
         Notification notification = new Notification();
         notification.setMessage(message);
         notification.setUser(userEntityRepo.findById(userId).get()); // if you have a direct `User` relation, set the `user` object instead

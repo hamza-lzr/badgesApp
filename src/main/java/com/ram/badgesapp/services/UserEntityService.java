@@ -2,6 +2,7 @@ package com.ram.badgesapp.services;
 
 import com.ram.badgesapp.entities.Badge;
 import com.ram.badgesapp.entities.Company;
+import com.ram.badgesapp.entities.Role;
 import com.ram.badgesapp.entities.UserEntity;
 import com.ram.badgesapp.repos.BadgeRepo;
 import com.ram.badgesapp.repos.UserEntityRepo;
@@ -10,7 +11,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserEntityService {
@@ -107,9 +110,49 @@ public class UserEntityService {
         return userEntityRepo.findByKeycloakId(id);
     }
 
+
+
+
+
+    private UserEntity getOrCreateUserFromToken(JwtAuthenticationToken auth) {
+        String keycloakId = auth.getToken().getSubject();
+        UserEntity user = userEntityRepo.findByKeycloakId(keycloakId);
+
+        if (user == null) {
+            // User exists in Keycloak but not in our DB, so let's create them.
+            user = new UserEntity();
+            user.setKeycloakId(keycloakId);
+
+            // Populate user details from JWT claims
+            user.setEmail(auth.getToken().getClaimAsString("email"));
+            user.setFirstName(auth.getToken().getClaimAsString("given_name"));
+            user.setLastName(auth.getToken().getClaimAsString("family_name"));
+
+            // Extract roles to assign the correct role in our system
+            Map<String, Object> realmAccess = auth.getToken().getClaimAsMap("realm_access");
+            if (realmAccess != null && realmAccess.get("roles") instanceof Collection) {
+                @SuppressWarnings("unchecked")
+                Collection<String> roles = (Collection<String>) realmAccess.get("roles");
+                if (roles.contains("ADMIN")) {
+                    user.setRole(Role.ADMIN);
+                } else {
+                    user.setRole(Role.EMPLOYEE);
+                }
+            } else {
+                // Default to EMPLOYEE if no roles claim is found
+                user.setRole(Role.EMPLOYEE);
+            }
+
+            // Note: Other fields like 'matricule', 'phone', 'company', 'status'
+            // will be null or their default value. They can be updated later through other app flows.
+
+            return userEntityRepo.save(user);
+        }
+        return user;
+    }
+
     public UserEntity getCurrentEmployee(JwtAuthenticationToken auth) {
-        String keycloakSub = auth.getToken().getSubject(); // 'sub' claim
-        return userEntityRepo.findByKeycloakId(keycloakSub);
+        return getOrCreateUserFromToken(auth);
     }
 
     public boolean canAccessEmployee(Authentication auth, Long requestedId) {
@@ -119,21 +162,26 @@ public class UserEntityService {
             return true;
         }
 
-        // Get Keycloak user ID from JWT
+        // Use the JIT-provisioning method to get the current user
         JwtAuthenticationToken jwtAuth = (JwtAuthenticationToken) auth;
-        String keycloakSub = jwtAuth.getToken().getSubject();
+        UserEntity emp = getOrCreateUserFromToken(jwtAuth);
 
-        // Fetch employee directly
-        UserEntity emp = userEntityRepo.findByKeycloakId(keycloakSub);
-
-        // If no employee found → deny access
-        if (emp == null) {
-            return false;
-        }
-
-        // Allow only if the requested ID matches the logged-in employee’s ID
+        // The 'emp' object is now guaranteed to be non-null.
+        // Allow access only if the requested ID matches the logged-in employee’s ID.
         return emp.getId().equals(requestedId);
     }
+
+    public void ensureAdminExists(String keycloakId) {
+        if (userEntityRepo.findByKeycloakId(keycloakId) == null) {
+            UserEntity admin = new UserEntity();
+            admin.setKeycloakId(keycloakId);
+            admin.setEmail("hamza");
+            admin.setRole(Role.ADMIN);
+            userEntityRepo.save(admin);
+        }
+    }
+
+
 
 
 
