@@ -1,5 +1,6 @@
 package com.ram.badgesapp.dto;
 
+import com.ram.badgesapp.entities.BadgeStatus;
 import lombok.Data;
 
 import java.util.Date;
@@ -16,6 +17,8 @@ public class BadgeDTO {
     private String issuedDate;
 
     private String expiryDate;
+
+    private BadgeStatus status;
 
     private Long companyId;
 

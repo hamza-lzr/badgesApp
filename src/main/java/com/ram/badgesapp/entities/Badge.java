@@ -22,6 +22,10 @@ public class Badge {
 
     private LocalDate expiryDate;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private BadgeStatus status;
+
     @OneToMany(mappedBy = "badge", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Access> accesList = new ArrayList<>();
 
