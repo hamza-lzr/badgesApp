@@ -6,11 +6,12 @@ import com.ram.badgesapp.repos.CongeRepo;
 import com.ram.badgesapp.repos.UserEntityRepo;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.time.format.DateTimeFormatter;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class BadgeLeaveDetectionService {
@@ -19,6 +20,7 @@ public class BadgeLeaveDetectionService {
     private final CongeRepo congeRepo;
     private final UserEntityRepo userEntityRepo;
     private final NotificationService notificationService;
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public BadgeLeaveDetectionService(BadgeRepo badgeRepo, CongeRepo congeRepo, 
                                      UserEntityRepo userEntityRepo, 
@@ -48,7 +50,7 @@ public class BadgeLeaveDetectionService {
             // Filter active badges
             List<Badge> activeBadges = userBadges.stream()
                     .filter(badge -> badge.getStatus() == BadgeStatus.ACTIVE)
-                    .collect(Collectors.toList());
+                    .toList();
             
             activeBadgesDuringLeave.addAll(activeBadges);
         }
@@ -104,11 +106,47 @@ public class BadgeLeaveDetectionService {
     }
     
     /**
-     * Scheduled task to run the detection daily at 8:00 AM
+     * Scheduled task to run the detection daily at 13:00
      */
-    @Scheduled(cron = "* * 13 * * *")
+    @Scheduled(cron = "0 0 13 * * *")
     public void scheduledBadgeLeaveDetection() {
         List<Badge> activeBadgesDuringLeave = detectActiveBadgesDuringLeave();
         notifyAdminsAboutActiveBadgesDuringLeave(activeBadgesDuringLeave);
     }
+
+    @Transactional
+    public void handleApprovedLeave(Conge leave) {
+        LocalDate today = LocalDate.now();
+
+        // Période de congé en cours (par rapport à "aujourd'hui") ?
+        boolean leaveIsActiveNow = !today.isBefore(leave.getStartDate()) && !today.isAfter(leave.getEndDate());
+
+        // Récupérer les badges de l'employé
+        List<Badge> userBadges = badgeRepo.findAllByUser_Id(leave.getUser().getId());
+        List<Badge> activeBadges = userBadges.stream()
+                .filter(b -> b.getStatus() == BadgeStatus.ACTIVE)
+                .toList();
+
+        String range = leave.getStartDate().format(DATE_FMT) + " → " + leave.getEndDate().format(DATE_FMT);
+
+
+        // Notifier les admins de l'approbation
+        List<UserEntity> admins = findAllAdminUsers();
+        String adminMsg = "Congé approuvé pour l'employé #" + leave.getUser().getId() + " (" + range + ").";
+        for (UserEntity admin : admins) {
+            notificationService.createNotificationForUser(admin.getId(), adminMsg);
+        }
+
+if (!leaveIsActiveNow) {
+            // Congé approuvé mais à venir : simple info aux admins
+            String info = "Le congé approuvé pour l'employé #" + leave.getUser().getId()
+                    + " débutera le " + leave.getStartDate().format(DATE_FMT)
+                    + ". Les badges seront vérifiés automatiquement à la date de début.";
+            for (UserEntity admin : admins) {
+                notificationService.createNotificationForUser(admin.getId(), info);
+            }
+        }
+    }
+
+
 }

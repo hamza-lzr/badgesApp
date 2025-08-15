@@ -1,9 +1,8 @@
 package com.ram.badgesapp.services;
 
-import com.ram.badgesapp.entities.ReqStatus;
-import com.ram.badgesapp.entities.ReqType;
-import com.ram.badgesapp.entities.Requests;
+import com.ram.badgesapp.entities.*;
 import com.ram.badgesapp.repos.RequestsRepo;
+import com.ram.badgesapp.repos.UserEntityRepo;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -14,10 +13,12 @@ public class RequestsService {
 
     private final RequestsRepo requestsRepo;
     private final NotificationService notificationService;
+    private final UserEntityRepo userEntityRepo;
     
-    public RequestsService(RequestsRepo requestsRepo, NotificationService notificationService) {
+    public RequestsService(RequestsRepo requestsRepo, NotificationService notificationService, UserEntityRepo userEntityRepo) {
         this.requestsRepo = requestsRepo;
         this.notificationService = notificationService;
+        this.userEntityRepo = userEntityRepo;
     }
 
     public List<Requests> getAllRequests() {
@@ -30,6 +31,15 @@ public class RequestsService {
     }
 
     public Requests saveRequest(Requests request) {
+        notificationService.createNotificationForUser(request.getUser().getId(), "Your request has been sent. Request type: " + request.getReqType() + ", Description: " + request.getDescription());
+        List<UserEntity> admins = userEntityRepo.findAllByRole(Role.ADMIN);
+
+        String msg = "Nouvelle demande de type " + request.getReqType() +
+                ", (Employé #" + request.getUser().getId() + "), Nom Complet: " + request.getUser().getFirstName() + " " + request.getUser().getLastName() + ")";
+
+        for (UserEntity admin : admins) {
+            notificationService.createNotificationForUser(admin.getId(), msg);
+        }
         return requestsRepo.save(request);
     }
 

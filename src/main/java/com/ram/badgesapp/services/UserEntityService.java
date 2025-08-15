@@ -66,6 +66,10 @@ public class UserEntityService {
             emp.setStatus(user.getStatus());
         }
 
+        if(user.getCompany() !=  null){
+            emp.setCompany(user.getCompany());
+        }
+
         userEntityRepo.save(emp);
         return emp;
 
