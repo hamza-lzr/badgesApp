@@ -37,4 +37,6 @@ public interface CongeRepo extends JpaRepository<Conge, Long> {
      */
     @Query("SELECT c FROM Conge c WHERE c.user.id = ?1 AND c.startDate <= ?2 AND c.endDate >= ?2 AND c.status = com.ram.badgesapp.entities.StatusConge.APPROVED")
     List<Conge> findActiveLeavesByUserId(Long userId, LocalDate currentDate);
+
+    List<Conge> findAllByUser_Id(Long userId);
 }

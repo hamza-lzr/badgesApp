@@ -178,4 +178,8 @@ public class CongeService {
     public List<Conge> getAllConges() {
         return congeRepo.findAll();
     }
+
+    public List<Conge> getCongesByUserId(Long userId) {
+        return congeRepo.findAllByUser_Id(userId);
+    }
 }

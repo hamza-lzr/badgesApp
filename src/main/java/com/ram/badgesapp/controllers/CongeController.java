@@ -3,9 +3,13 @@ package com.ram.badgesapp.controllers;
 
 import com.ram.badgesapp.dto.CongeDTO;
 import com.ram.badgesapp.mapper.CongeMapper;
+import com.ram.badgesapp.repos.UserEntityRepo;
 import com.ram.badgesapp.services.CongeService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,13 +21,16 @@ public class CongeController {
 
     private final CongeService congeService;
     private final CongeMapper congeMapper;
+    private final UserEntityRepo userEntityRepo;
 
-    public CongeController(CongeService congeService, CongeMapper congeMapper) {
+    public CongeController(CongeService congeService, CongeMapper congeMapper, UserEntityRepo userEntityRepo) {
         this.congeService = congeService;
         this.congeMapper = congeMapper;
+        this.userEntityRepo = userEntityRepo;
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<CongeDTO>> getAllConges(){
         return ResponseEntity.ok(congeService.getAllConges().stream().map(congeMapper::toDTO).toList());
     }
@@ -62,6 +69,26 @@ public class CongeController {
     public ResponseEntity<CongeDTO> updateStatusToRejected(@PathVariable Long id){
         congeService.updateStatusToRejected(id);
         return ResponseEntity.ok(congeMapper.toDTO(congeService.getCongeById(id).orElseThrow( () -> new EntityNotFoundException("Conge not found for id: " + id))));
+    }
+
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
+    public List<CongeDTO> getMyConges(@AuthenticationPrincipal Jwt jwt){
+
+        String keycloakUserId = jwt.getSubject();
+        Long internalUserId = userEntityRepo.findByKeycloakId(keycloakUserId)
+                .getId();
+
+        return congeService.getCongesByUserId(internalUserId)
+                .stream()
+                .map(congeMapper::toDTO)
+                .toList();
+    }
+
+    private boolean hasRole(Jwt jwt, String role) {
+        var roles = jwt.getClaimAsMap("realm_access");
+        List<String> roleList = (List<String>) roles.get("roles");
+        return roleList.contains(role);
     }
 
 }
