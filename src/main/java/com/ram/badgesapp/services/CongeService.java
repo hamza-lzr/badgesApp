@@ -57,7 +57,7 @@ public class CongeService {
 
         String msg = "Nouvelle demande de congé du : " +
                 fmt(conge.getStartDate()) + " au " + fmt(conge.getEndDate()) +
-                " (Employé #" + conge.getUser().getId() + ")";
+                " (Collaborateur: " + conge.getUser().getFirstName() + " " + conge.getUser().getLastName() +  ")";
 
         for (UserEntity admin : admins) {
             notificationService.createNotificationForUser(admin.getId(), msg);
