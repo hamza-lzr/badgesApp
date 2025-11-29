@@ -3,6 +3,7 @@ package com.ram.badgesapp.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -34,7 +35,7 @@ public class UserEntity {
     private Company company;
 
     @OneToMany(mappedBy = "user")
-    private List<Badge> badge;
+    private List<Badge> badge = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private Status status;

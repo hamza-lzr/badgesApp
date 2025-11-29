@@ -6,6 +6,7 @@ import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
@@ -26,14 +27,18 @@ import java.util.stream.Collectors;
 public class KeycloakAdminService {
 
     private final Keycloak keycloak;
-    private final String targetRealm = "ram"; // realm where you create users
+    private final String targetRealm = "ram";
+    // realm where you create users
+
+    @Value("${keycloak.client-secret}")
+    private String clientSecret;
 
     public KeycloakAdminService() {
         this.keycloak = KeycloakBuilder.builder()
                 .serverUrl("http://localhost:8081")
                 .realm("master") // ✅ must authenticate in master
                 .clientId("ram-admin") // ✅ admin client created in master
-                .clientSecret("90veClOzMBtB48mnhtQfDqodjh6fAa89")
+                .clientSecret(clientSecret)
                 .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
                 .build();
     }

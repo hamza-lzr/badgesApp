@@ -6,18 +6,20 @@ import com.ram.badgesapp.repos.CongeRepo;
 import com.ram.badgesapp.repos.UserEntityRepo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class BadgeLeaveDetectionServiceTest {
 
     @Mock
@@ -35,113 +37,99 @@ class BadgeLeaveDetectionServiceTest {
     @InjectMocks
     private BadgeLeaveDetectionService badgeLeaveDetectionService;
 
-    private UserEntity employee;
+    private UserEntity user;
     private UserEntity admin;
-    private Badge activeBadge;
-    private Conge activeLeave;
+    private Badge badge;
+    private Conge conge;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-
-        // Create test data
-        employee = new UserEntity();
-        employee.setId(1L);
-        employee.setFirstName("John");
-        employee.setLastName("Doe");
-        employee.setEmail("john.doe@example.com");
-        employee.setRole(Role.EMPLOYEE);
+        user = new UserEntity();
+        user.setId(1L);
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setRole(Role.EMPLOYEE);
 
         admin = new UserEntity();
         admin.setId(2L);
-        admin.setFirstName("Admin");
-        admin.setLastName("User");
-        admin.setEmail("admin@example.com");
         admin.setRole(Role.ADMIN);
 
-        activeBadge = new Badge();
-        activeBadge.setId(1L);
-        activeBadge.setCode("B12345");
-        activeBadge.setStatus(BadgeStatus.ACTIVE);
-        activeBadge.setUser(employee);
+        badge = new Badge();
+        badge.setId(1L);
+        badge.setUser(user);
+        badge.setStatus(BadgeStatus.ACTIVE);
+        badge.setCode("BADGE001");
 
-        LocalDate today = LocalDate.now();
-        activeLeave = new Conge();
-        activeLeave.setId(1L);
-        activeLeave.setStartDate(today.minusDays(1));
-        activeLeave.setEndDate(today.plusDays(5));
-        activeLeave.setUser(employee);
-        activeLeave.setStatus(StatusConge.APPROVED);
+        conge = new Conge();
+        conge.setId(1L);
+        conge.setUser(user);
+        conge.setStartDate(LocalDate.now().minusDays(1));
+        conge.setEndDate(LocalDate.now().plusDays(1));
     }
 
     @Test
-    void detectActiveBadgesDuringLeave_shouldReturnActiveBadges() {
-        // Arrange
-        LocalDate today = LocalDate.now();
-        when(congeRepo.findActiveLeaves(today)).thenReturn(Collections.singletonList(activeLeave));
-        when(badgeRepo.findAllByUser_Id(employee.getId())).thenReturn(Collections.singletonList(activeBadge));
+    void detectActiveBadgesDuringLeave() {
+        when(congeRepo.findActiveLeaves(any(LocalDate.class))).thenReturn(Collections.singletonList(conge));
+        when(badgeRepo.findAllByUser_Id(1L)).thenReturn(Collections.singletonList(badge));
 
-        // Act
-        List<Badge> result = badgeLeaveDetectionService.detectActiveBadgesDuringLeave();
+        List<Badge> activeBadges = badgeLeaveDetectionService.detectActiveBadgesDuringLeave();
 
-        // Assert
-        assertEquals(1, result.size());
-        assertEquals(activeBadge.getId(), result.get(0).getId());
-        verify(congeRepo).findActiveLeaves(today);
-        verify(badgeRepo).findAllByUser_Id(employee.getId());
+        assertEquals(1, activeBadges.size());
+        assertEquals(badge, activeBadges.get(0));
     }
 
     @Test
-    void findAllAdminUsers_shouldReturnAdminUsers() {
-        // Arrange
-        when(userEntityRepo.findAll()).thenReturn(Arrays.asList(employee, admin));
-
-        // Act
-        List<UserEntity> result = badgeLeaveDetectionService.findAllAdminUsers();
-
-        // Assert
-        assertEquals(1, result.size());
-        assertEquals(admin.getId(), result.get(0).getId());
-        verify(userEntityRepo).findAll();
-    }
-
-    @Test
-    void notifyAdminsAboutActiveBadgesDuringLeave_shouldNotifyAdmins() {
-        // Arrange
-        LocalDate today = LocalDate.now();
-        when(congeRepo.findActiveLeavesByUserId(employee.getId(), today)).thenReturn(Collections.singletonList(activeLeave));
+    void findAllAdminUsers() {
         when(userEntityRepo.findAll()).thenReturn(Collections.singletonList(admin));
-
-        // Act
-        badgeLeaveDetectionService.notifyAdminsAboutActiveBadgesDuringLeave(Collections.singletonList(activeBadge));
-
-        // Assert
-        verify(notificationService).createNotificationForUser(eq(admin.getId()), anyString());
+        List<UserEntity> admins = badgeLeaveDetectionService.findAllAdminUsers();
+        assertEquals(1, admins.size());
+        assertEquals(admin, admins.get(0));
     }
 
     @Test
-    void notifyAdminsAboutActiveBadgesDuringLeave_shouldNotNotifyWhenNoActiveBadges() {
-        // Act
+    void notifyAdminsAboutActiveBadgesDuringLeave() {
+        when(userEntityRepo.findAll()).thenReturn(Collections.singletonList(admin));
+        when(congeRepo.findActiveLeavesByUserId(anyLong(), any(LocalDate.class))).thenReturn(Collections.singletonList(conge));
+
+        badgeLeaveDetectionService.notifyAdminsAboutActiveBadgesDuringLeave(Collections.singletonList(badge));
+
+        verify(notificationService, times(1)).createNotificationForUser(eq(2L), anyString());
+    }
+    
+    @Test
+    void notifyAdminsAboutActiveBadgesDuringLeave_noBadges() {
         badgeLeaveDetectionService.notifyAdminsAboutActiveBadgesDuringLeave(Collections.emptyList());
+        verify(notificationService, never()).createNotificationForUser(anyLong(), anyString());
+    }
+    
+    @Test
+    void handleApprovedLeave() {
+        when(userEntityRepo.findAll()).thenReturn(Collections.singletonList(admin));
+        when(badgeRepo.findAllByUser_Id(1L)).thenReturn(Collections.singletonList(badge));
 
-        // Assert
-        verifyNoInteractions(userEntityRepo);
-        verifyNoInteractions(notificationService);
+        badgeLeaveDetectionService.handleApprovedLeave(conge);
+
+        verify(notificationService, times(1)).createNotificationForUser(eq(2L), anyString());
     }
 
     @Test
-    void scheduledBadgeLeaveDetection_shouldDetectAndNotify() {
-        // Arrange
-        LocalDate today = LocalDate.now();
-        when(congeRepo.findActiveLeaves(today)).thenReturn(Collections.singletonList(activeLeave));
-        when(badgeRepo.findAllByUser_Id(employee.getId())).thenReturn(Collections.singletonList(activeBadge));
-        when(congeRepo.findActiveLeavesByUserId(employee.getId(), today)).thenReturn(Collections.singletonList(activeLeave));
-        when(userEntityRepo.findAll()).thenReturn(Collections.singletonList(admin));
+    void handleApprovedLeave_futureLeave() {
+        conge.setStartDate(LocalDate.now().plusDays(2));
+        conge.setEndDate(LocalDate.now().plusDays(5));
+        when(userEntityRepo.findAll()).thenReturn(List.of(admin));
+        
+        badgeLeaveDetectionService.handleApprovedLeave(conge);
 
-        // Act
-        badgeLeaveDetectionService.scheduledBadgeLeaveDetection();
-
-        // Assert
-        verify(notificationService).createNotificationForUser(eq(admin.getId()), anyString());
+        // Notify admins about approval
+        verify(notificationService, times(1)).createNotificationForUser(
+            eq(admin.getId()), 
+            contains("Congé approuvé pour l'employé #1")
+        );
+        
+        // Notify admins about future check
+        verify(notificationService, times(1)).createNotificationForUser(
+            eq(admin.getId()), 
+            contains("Le congé approuvé pour l'employé #1 débutera le")
+        );
     }
 }
