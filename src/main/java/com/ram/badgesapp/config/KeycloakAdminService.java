@@ -1,76 +1,69 @@
 package com.ram.badgesapp.config;
 
+import jakarta.annotation.PostConstruct; // 1. Add this import
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 import org.keycloak.OAuth2Constants;
-import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.KeycloakBuilder;
-import org.keycloak.representations.idm.UserRepresentation;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UserResource;
-import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.admin.client.CreatedResponseUtil;
+import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Service
 public class KeycloakAdminService {
 
-    private final Keycloak keycloak;
+    // 2. Remove 'final'. We initialize it later in @PostConstruct.
+    private Keycloak keycloak;
+
     private final String targetRealm = "ram";
-    // realm where you create users
 
     @Value("${keycloak.client-secret}")
     private String clientSecret;
 
+    // 3. Keep the constructor empty.
+    // Do not put logic here, because clientSecret is still null!
     public KeycloakAdminService() {
+    }
+
+    // 4. Move initialization here. This runs automatically AFTER injection.
+    @PostConstruct
+    public void init() {
         this.keycloak = KeycloakBuilder.builder()
                 .serverUrl("http://localhost:8081")
-                .realm("master") // ✅ must authenticate in master
-                .clientId("ram-admin") // ✅ admin client created in master
-                .clientSecret(clientSecret)
+                .realm("master")
+                .clientId("ram-admin")
+                .clientSecret(clientSecret) // Now this is safe to use
                 .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
                 .build();
     }
 
-    public String createKeycloakUser(String username,
-                                     String email,
-                                     String password,
-                                     String roleName,
-                                     String firstName,
-                                     String lastName) {
-
-        // 1️⃣ Create user representation
+    public String createKeycloakUser(String username, String email, String password, String roleName, String firstName, String lastName) {
         UserRepresentation user = new UserRepresentation();
         user.setUsername(username);
         user.setEmail(email);
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setEnabled(true);
-        
-        // For EMPLOYEE role, enable email verification
 
-
-        // 2️⃣ Create user in target realm
         Response response = keycloak.realm(targetRealm).users().create(user);
+
         if (response.getStatus() != 201) {
             throw new RuntimeException("Failed to create Keycloak user: " + response.getStatusInfo());
         }
 
-        // 3️⃣ Get Keycloak UUID (userId)
         String userId = CreatedResponseUtil.getCreatedId(response);
 
-        // 4️⃣ Set initial password only for ADMIN users
         if (!"EMPLOYEE".equals(roleName) && password != null && !password.isEmpty()) {
             CredentialRepresentation credentials = new CredentialRepresentation();
             credentials.setTemporary(false);
@@ -79,7 +72,6 @@ public class KeycloakAdminService {
             keycloak.realm(targetRealm).users().get(userId).resetPassword(credentials);
         }
 
-        // 5️⃣ Assign realm role
         RoleRepresentation realmRole = keycloak.realm(targetRealm)
                 .roles()
                 .get(roleName)
@@ -91,6 +83,7 @@ public class KeycloakAdminService {
                 .roles()
                 .realmLevel()
                 .add(List.of(realmRole));
+
         if ("EMPLOYEE".equals(roleName)) {
             keycloak.realm(targetRealm)
                     .users()
@@ -98,48 +91,30 @@ public class KeycloakAdminService {
                     .executeActionsEmail(List.of("VERIFY_EMAIL", "UPDATE_PASSWORD"));
         }
 
-        return userId; // UUID of created user
+        return userId;
     }
-    
-    /**
-     * Changes the password for a Keycloak user
-     * 
-     * @param keycloakId The Keycloak UUID of the user
-     * @param newPassword The new password to set
-     * @throws ResponseStatusException if the user is not found or the password change fails
-     */
+
     public void changePassword(String keycloakId, String newPassword) {
         try {
-            // Create credential representation
             CredentialRepresentation credentials = new CredentialRepresentation();
             credentials.setTemporary(false);
             credentials.setType(CredentialRepresentation.PASSWORD);
             credentials.setValue(newPassword);
-            
-            // Get user resource and reset password
+
             UserResource userResource = keycloak.realm(targetRealm).users().get(keycloakId);
             if (userResource == null) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found in Keycloak");
             }
-            
+
             userResource.resetPassword(credentials);
         } catch (Exception e) {
             if (e instanceof ResponseStatusException) {
                 throw e;
             }
-            throw new ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR, 
-                "Failed to change password: " + e.getMessage(), 
-                e
-            );
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to change password: " + e.getMessage(), e);
         }
     }
-    /**
-     * Gets a user from Keycloak by their ID
-     * 
-     * @param userId The Keycloak UUID of the user
-     * @return The UserRepresentation or null if not found
-     */
+
     public UserRepresentation getUserById(String userId) {
         try {
             return keycloak.realm(targetRealm).users().get(userId).toRepresentation();
@@ -147,12 +122,7 @@ public class KeycloakAdminService {
             return null;
         }
     }
-    
-    /**
-     * Gets all users from Keycloak
-     * 
-     * @return List of UserRepresentation objects
-     */
+
     public List<UserRepresentation> getAllUsers() {
         try {
             return keycloak.realm(targetRealm).users().list();
@@ -160,13 +130,7 @@ public class KeycloakAdminService {
             return new ArrayList<>();
         }
     }
-    
-    /**
-     * Gets the roles assigned to a user in Keycloak
-     * 
-     * @param userId The Keycloak UUID of the user
-     * @return List of role names
-     */
+
     public List<String> getUserRoles(String userId) {
         try {
             List<RoleRepresentation> roles = keycloak.realm(targetRealm)
@@ -175,7 +139,7 @@ public class KeycloakAdminService {
                     .roles()
                     .realmLevel()
                     .listAll();
-            
+
             return roles.stream()
                     .map(RoleRepresentation::getName)
                     .collect(Collectors.toList());
@@ -192,12 +156,7 @@ public class KeycloakAdminService {
                     .getRoleUserMembers()
                     .stream().toList();
         } catch (NotFoundException e) {
-            // This handles the case where the role itself doesn't exist in Keycloak.
             return List.of();
         }
     }
-
 }
-
-
-
