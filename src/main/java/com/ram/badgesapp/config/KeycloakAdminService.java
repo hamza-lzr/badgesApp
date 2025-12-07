@@ -91,6 +91,13 @@ public class KeycloakAdminService {
                     .executeActionsEmail(List.of("VERIFY_EMAIL", "UPDATE_PASSWORD"));
         }
 
+        if("ADMIN".equals(roleName)){
+            keycloak.realm(targetRealm)
+                    .users()
+                    .get(userId)
+                    .executeActionsEmail(List.of("VERIFY_EMAIL", "UPDATE_PASSWORD"));
+        }
+
         return userId;
     }
 
