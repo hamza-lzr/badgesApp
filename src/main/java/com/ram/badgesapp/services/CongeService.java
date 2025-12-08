@@ -32,6 +32,8 @@ public class CongeService {
     private final BadgeLeaveDetectionService badgeLeaveDetectionService;
     private final UserEntityRepo userEntityRepo;
 
+    String notFound = "Conge not found with id: ";
+
     public CongeService(CongeRepo congeRepo,
                         NotificationService notificationService,
                         BadgeLeaveDetectionService badgeLeaveDetectionService,
@@ -118,7 +120,7 @@ public class CongeService {
 
     public Optional<Conge> updateConge(Long id, Conge patch) {
         Conge entity = congeRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Conge not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(notFound + id));
 
         // Conserver l’ancien statut pour détecter PENDING → X
         StatusConge oldStatus = entity.getStatus();
@@ -145,7 +147,7 @@ public class CongeService {
 
     public Optional<Conge> updateStatusToApproved(Long id) {
         Conge conge = congeRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Conge not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(notFound + id));
 
         StatusConge old = conge.getStatus();
         conge.setStatus(StatusConge.APPROVED);
@@ -161,7 +163,7 @@ public class CongeService {
 
     public Optional<Conge> updateStatusToRejected(Long id) {
         Conge conge = congeRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Conge not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(notFound + id));
 
         StatusConge old = conge.getStatus();
         conge.setStatus(StatusConge.REJECTED);

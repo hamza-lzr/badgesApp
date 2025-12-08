@@ -23,6 +23,8 @@ public class CongeController {
     private final CongeMapper congeMapper;
     private final UserEntityRepo userEntityRepo;
 
+    String notFound = "Conge not found for id: ";
+
     public CongeController(CongeService congeService, CongeMapper congeMapper, UserEntityRepo userEntityRepo) {
         this.congeService = congeService;
         this.congeMapper = congeMapper;
@@ -37,7 +39,7 @@ public class CongeController {
 
     @GetMapping("/{id}")
     public ResponseEntity<CongeDTO> getCongeById(@PathVariable Long id){
-        return ResponseEntity.ok(congeMapper.toDTO(congeService.getCongeById(id).orElseThrow( () -> new EntityNotFoundException("Conge not found for id: " + id))));
+        return ResponseEntity.ok(congeMapper.toDTO(congeService.getCongeById(id).orElseThrow( () -> new EntityNotFoundException(notFound + id))));
 
     }
 
@@ -56,19 +58,19 @@ public class CongeController {
     @PutMapping("/{id}")
     public ResponseEntity<CongeDTO> updateConge(@PathVariable Long id, @RequestBody CongeDTO conge){
         congeService.updateConge(id, congeMapper.toEntity(conge));
-        return ResponseEntity.ok(congeMapper.toDTO(congeService.getCongeById(id).orElseThrow( () -> new EntityNotFoundException("Conge not found for id: " + id))));
+        return ResponseEntity.ok(congeMapper.toDTO(congeService.getCongeById(id).orElseThrow( () -> new EntityNotFoundException(notFound + id))));
     }
 
     @PutMapping("/approve/{id}")
     public ResponseEntity<CongeDTO> updateStatusToApproved(@PathVariable Long id){
         congeService.updateStatusToApproved(id);
-        return ResponseEntity.ok(congeMapper.toDTO(congeService.getCongeById(id).orElseThrow( () -> new EntityNotFoundException("Conge not found for id: " + id))));
+        return ResponseEntity.ok(congeMapper.toDTO(congeService.getCongeById(id).orElseThrow( () -> new EntityNotFoundException(notFound + id))));
     }
 
     @PutMapping("/reject/{id}")
     public ResponseEntity<CongeDTO> updateStatusToRejected(@PathVariable Long id){
         congeService.updateStatusToRejected(id);
-        return ResponseEntity.ok(congeMapper.toDTO(congeService.getCongeById(id).orElseThrow( () -> new EntityNotFoundException("Conge not found for id: " + id))));
+        return ResponseEntity.ok(congeMapper.toDTO(congeService.getCongeById(id).orElseThrow( () -> new EntityNotFoundException(notFound + id))));
     }
 
     @GetMapping("/my")

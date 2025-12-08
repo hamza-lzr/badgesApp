@@ -17,13 +17,15 @@ public class BadgeService {
         this.badgeRepo = badgeRepo;
     }
 
+    String notFound = "Badge not found with id: ";
+
     public List<Badge> getAllBadges(){
         return badgeRepo.findAll();
     }
 
     public Badge getBadgeById(Long id){
         return badgeRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Badge not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(notFound + id));
     }
 
     public Badge createBadge(Badge badge){
@@ -36,7 +38,7 @@ public class BadgeService {
 
     public Badge updateBadge(Long id, Badge badge){
         Badge b = badgeRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Badge not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(notFound + id));
         if(badge.getCode() != null){
             b.setCode(badge.getCode());
         }
@@ -58,7 +60,7 @@ public class BadgeService {
 
     public Badge updateExpiryDate(Long id, Badge badge){
         Badge b = badgeRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Badge not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(notFound + id));
         if(badge.getExpiryDate() != null){
             b.setExpiryDate(badge.getExpiryDate());
         }

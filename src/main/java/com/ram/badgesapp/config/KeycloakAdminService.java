@@ -31,9 +31,10 @@ public class KeycloakAdminService {
     @Value("${keycloak.client-secret}")
     private String clientSecret;
 
-    // 3. Keep the constructor empty.
-    // Do not put logic here, because clientSecret is still null!
+
+    //Empty constructor
     public KeycloakAdminService() {
+        //  No logic here, because clientSecret is still null!
     }
 
     // 4. Move initialization here. This runs automatically AFTER injection.

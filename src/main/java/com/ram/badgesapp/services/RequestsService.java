@@ -21,13 +21,15 @@ public class RequestsService {
         this.userEntityRepo = userEntityRepo;
     }
 
+    String notFound = "Request not found with id: ";
+
     public List<Requests> getAllRequests() {
         return requestsRepo.findAll();
     }
 
     public Requests getRequest(Long id) {
         return requestsRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Request not found with id " + id));
+                .orElseThrow(() -> new EntityNotFoundException(notFound+ id));
     }
 
     public Requests saveRequest(Requests request) {
@@ -49,7 +51,7 @@ public class RequestsService {
 
     public Requests updateRequest(Long id, Requests request) {
         Requests req = requestsRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Request not found with id " + id));
+                .orElseThrow(() -> new EntityNotFoundException(notFound + id));
         if(request.getDescription() != null) req.setDescription(request.getDescription());
         if(request.getUser() != null) req.setUser(request.getUser());
         if(request.getReqType() != null) req.setReqType(request.getReqType());
@@ -59,14 +61,14 @@ public class RequestsService {
 
     public Requests updateReqType(Long id, ReqType reqType) {
         Requests req = requestsRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Request not found with id " + id));
+                .orElseThrow(() -> new EntityNotFoundException(notFound + id));
         req.setReqType(reqType);
         return requestsRepo.save(req);
     }
 
     public Requests updateReqStatus(Long id, ReqStatus reqStatus) {
         Requests req = requestsRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Request not found with id " + id));
+                .orElseThrow(() -> new EntityNotFoundException(notFound + id));
         
         // Store the old status before updating
         ReqStatus oldStatus = req.getReqStatus();

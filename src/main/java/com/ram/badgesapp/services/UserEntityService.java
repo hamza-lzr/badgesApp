@@ -27,6 +27,8 @@ public class UserEntityService {
         this.companyService = companyService;
     }
 
+    String notFound = "User not found with id: ";
+
     public UserEntity createUser(UserEntity user) {
         return userEntityRepo.save(user);
     }
@@ -37,7 +39,7 @@ public class UserEntityService {
 
     public UserEntity getUserById(Long id) {
         return userEntityRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("UserEntity not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(notFound + id));
     }
 
     public void deleteUser(Long id) {
@@ -46,7 +48,7 @@ public class UserEntityService {
 
     public UserEntity updateUser(Long id, UserEntity user){
         UserEntity emp = userEntityRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("UserEntity not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(notFound + id));
         if(user.getFirstName() != null){
             emp.setFirstName(user.getFirstName());
         }
@@ -78,7 +80,7 @@ public class UserEntityService {
 
     public UserEntity updateEmployeeStatus(Long id, UserEntity employee){
         UserEntity emp = userEntityRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Employee not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(notFound + id));
         if(employee.getStatus() != null){
             emp.setStatus(employee.getStatus());
         }
@@ -89,13 +91,13 @@ public class UserEntityService {
 
     public UserEntity removeBadgeFromEmployee(Long id){
         UserEntity emp = userEntityRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Employee not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(notFound + id));
         emp.setBadge(null);
         return userEntityRepo.save(emp);
     }
     public UserEntity addOrUpdateEmployeeBadge(Long id, Long idBadge){
         UserEntity emp = userEntityRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Employee not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(notFound + id));
         Badge badge = badgeRepo.findById(idBadge)
                 .orElseThrow(() -> new EntityNotFoundException("Badge not found with id: " + idBadge));
         emp.getBadge().add(badge);
@@ -104,7 +106,7 @@ public class UserEntityService {
 
     public UserEntity addOrUpdateEmployeeCompany(Long id, Long idComp){
         UserEntity emp = userEntityRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Employee not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException(notFound + id));
         Company company = companyService.getCompanyById(idComp);
         emp.setCompany(company);
         return userEntityRepo.save(emp);
