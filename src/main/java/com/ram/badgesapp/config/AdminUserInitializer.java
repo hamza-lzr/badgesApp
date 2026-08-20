@@ -7,11 +7,13 @@ import com.ram.badgesapp.config.KeycloakAdminService;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@ConditionalOnProperty(name = "app.keycloak.sync-on-startup", havingValue = "true", matchIfMissing = true)
 @Slf4j
 public class AdminUserInitializer implements CommandLineRunner {
 

@@ -1,6 +1,6 @@
 package com.ram.badgesapp.config;
 
-import jakarta.annotation.PostConstruct; // 1. Add this import
+import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 import org.keycloak.OAuth2Constants;
@@ -23,28 +23,33 @@ import java.util.stream.Collectors;
 @Service
 public class KeycloakAdminService {
 
-    // 2. Remove 'final'. We initialize it later in @PostConstruct.
     private Keycloak keycloak;
-
-    private final String targetRealm = "ram";
 
     @Value("${keycloak.client-secret}")
     private String clientSecret;
 
+    @Value("${keycloak.server-url}")
+    private String serverUrl;
 
-    //Empty constructor
+    @Value("${keycloak.admin-realm}")
+    private String adminRealm;
+
+    @Value("${keycloak.target-realm}")
+    private String targetRealm = "ram";
+
+    @Value("${keycloak.admin-client-id}")
+    private String adminClientId;
+
     public KeycloakAdminService() {
-        //  No logic here, because clientSecret is still null!
     }
 
-    // 4. Move initialization here. This runs automatically AFTER injection.
     @PostConstruct
     public void init() {
         this.keycloak = KeycloakBuilder.builder()
-                .serverUrl("http://localhost:8081")
-                .realm("master")
-                .clientId("ram-admin")
-                .clientSecret(clientSecret) // Now this is safe to use
+                .serverUrl(serverUrl)
+                .realm(adminRealm)
+                .clientId(adminClientId)
+                .clientSecret(clientSecret)
                 .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
                 .build();
     }

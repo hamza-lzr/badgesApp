@@ -18,7 +18,6 @@ import static org.springframework.security.authorization.AuthorityReactiveAuthor
 
 @RestController
 @RequestMapping("/badges")
-@CrossOrigin(origins = "*")
 public class BadgeController {
 
     private final BadgeService badgeService;

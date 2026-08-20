@@ -10,7 +10,6 @@ import org.mapstruct.Mappings;
 @Mapper(componentModel = "spring", uses = {UserMapperHelper.class})
 public interface UserMapper {
 
-    // ➤ Entity -> DTO
     @Mappings({
             @Mapping(target = "companyId", source = "company.id"),
             @Mapping(target = "badgesIds", expression = "java(user.getBadge() != null ? user.getBadge().stream().map(b -> b.getId()).toList() : null)"),
@@ -28,7 +27,6 @@ public interface UserMapper {
     UserDTO toDTO(UserEntity user);
 
 
-    // ➤ DTO -> Entity
     @Mappings({
             @Mapping(target = "company", source = "companyId", qualifiedByName = "companyFromId"),
             @Mapping(target = "badge", source = "badgesIds", qualifiedByName = "badgeListFromIds"),
@@ -37,6 +35,7 @@ public interface UserMapper {
 
             @Mapping(target = "id", ignore = true),
             @Mapping(target = "password", ignore = true),
+            @Mapping(target = "keycloakId", ignore = true),
 
             @Mapping(target = "email", source = "email"),
             @Mapping(target = "matricule", source = "matricule"),

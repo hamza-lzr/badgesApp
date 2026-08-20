@@ -16,7 +16,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/conge")
-@CrossOrigin(origins = "*")
 public class CongeController {
 
     private final CongeService congeService;

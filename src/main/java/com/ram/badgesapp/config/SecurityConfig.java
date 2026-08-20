@@ -1,5 +1,6 @@
 package com.ram.badgesapp.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -20,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -29,12 +29,18 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    private final List<String> allowedOrigins;
+
+    public SecurityConfig(@Value("${app.cors.allowed-origins}") List<String> allowedOrigins) {
+        this.allowedOrigins = allowedOrigins;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .cors(withDefaults()) // Use new lambda style. This will apply the corsConfigurationSource bean.
-                .csrf(AbstractHttpConfigurer::disable) // Use new lambda style to disable CSRF.
+                .cors(withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
@@ -50,11 +56,15 @@ public class SecurityConfig {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
             Map<String, Object> realmAccess = jwt.getClaimAsMap("realm_access");
-            Collection<String> roles = realmAccess == null ? Collections.emptyList()
-                    : (Collection<String>) realmAccess.get("roles");
+            Object rolesClaim = realmAccess == null ? null : realmAccess.get("roles");
+            if (!(rolesClaim instanceof Collection<?> roles)) {
+                return Collections.emptyList();
+            }
             return roles.stream()
-                    .map(roleName -> new SimpleGrantedAuthority("ROLE_" + roleName))
-                    .collect(Collectors.toList());
+                    .filter(String.class::isInstance)
+                    .map(String.class::cast)
+                    .map(roleName -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_" + roleName))
+                    .toList();
         });
         return converter;
     }
@@ -62,7 +72,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);

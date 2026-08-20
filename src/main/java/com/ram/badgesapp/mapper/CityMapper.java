@@ -15,10 +15,10 @@ public interface CityMapper {
     })
     CityDTO toDTO(City city);
 
-    // ➤ DTO → Entity
     @Mappings({
             @Mapping(target = "country", source = "countryId", qualifiedByName = "countryFromId"),
-            @Mapping(target = "id", ignore = true) // La base gère l'id
+            @Mapping(target = "id", ignore = true),
+            @Mapping(target = "airports", ignore = true)
     })
     City toEntity(CityDTO cityDTO);
 }

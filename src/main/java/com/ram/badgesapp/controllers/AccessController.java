@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/access")
-@CrossOrigin(origins = "*")
 public class AccessController {
 
     private final AccessService accessService;
