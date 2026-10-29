@@ -1,6 +1,20 @@
-# Badges App
+# Airport Badges — Spring Boot API
 
-Badges App is a Spring Boot REST API for managing employee badges and airport access. It was developed as an internship project and demonstrates a layered backend architecture, role-based access control with Keycloak, persistence with PostgreSQL, DTO mapping with MapStruct, and automated tests.
+![Java 17](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3-6DB33F?logo=springboot&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
+![Keycloak](https://img.shields.io/badge/Keycloak-4D4D4D?logo=keycloak&logoColor=white)
+
+Backend for the airport badge and access application I built during my 2025 internship at Royal Air Maroc.
+
+[React frontend](https://github.com/hamza-lzr/badges-app-frontend) · [My portfolio](https://lazaar.netlify.app/)
+
+## Start with the code
+
+- [Badge handling](src/main/java/com/ram/badgesapp/services/BadgeService.java) and [airport access](src/main/java/com/ram/badgesapp/services/AccessService.java)
+- [JWT validation, realm roles and CORS](src/main/java/com/ram/badgesapp/config/SecurityConfig.java)
+- [DTO mapping](src/main/java/com/ram/badgesapp/mapper/BadgeMapper.java)
+- [Controller, service and mapper tests](src/test/java/com/ram/badgesapp)
 
 ## What it does
 
@@ -22,15 +36,15 @@ Badges App is a Spring Boot REST API for managing employee badges and airport ac
 
 ## Architecture
 
-The code follows a conventional layered structure:
-
-```text
-controllers -> services -> repositories -> PostgreSQL
-      |            |
-      +---------- mappers ----------> DTOs
-                   |
-                Keycloak
+```mermaid
+flowchart LR
+    F["React frontend"] -->|"Bearer token"| A["Spring Boot API"]
+    F <-->|"Sign in"| K["Keycloak"]
+    A -->|"JWT validation"| K
+    A -->|"JPA"| D["PostgreSQL"]
 ```
+
+Inside the API: controllers handle requests, services apply the rules, repositories access the database, and MapStruct maps entities to DTOs.
 
 Application code lives under `src/main/java/com/ram/badgesapp`, grouped by controller, service, repository, entity, DTO, mapper, and configuration concerns.
 
@@ -42,6 +56,13 @@ Application code lives under `src/main/java/com/ram/badgesapp`, grouped by contr
 
 ## Configuration
 
+Clone the backend first:
+
+```bash
+git clone https://github.com/hamza-lzr/badgesApp.git
+cd badgesApp
+```
+
 Copy `.env.example` and provide values through your IDE, shell, container runtime, or deployment platform. The application intentionally does not load `.env` files by itself.
 
 The most important variables are:
@@ -49,12 +70,16 @@ The most important variables are:
 | Variable | Purpose |
 | --- | --- |
 | `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | PostgreSQL connection |
-| `KEYCLOAK_ISSUER_URI` | JWT issuer used by the resource server |
+| `KEYCLOAK_ISSUER_URI` | JWT issuer used by the resource server; must match the frontend realm |
+| `KEYCLOAK_SERVER_URL` | Keycloak base URL |
+| `KEYCLOAK_ADMIN_REALM`, `KEYCLOAK_TARGET_REALM` | Realm used for the admin client and realm containing application users |
 | `KEYCLOAK_ADMIN_CLIENT_ID`, `KEYCLOAK_ADMIN_CLIENT_SECRET` | Keycloak admin service client |
 | `KEYCLOAK_SYNC_ON_STARTUP` | Enables the optional admin-user sync at startup |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated trusted frontend origins |
 
-Defaults for local service URLs are defined in `application.properties`; secrets have no committed default.
+Defaults for local service URLs are defined in [`application.properties`](src/main/resources/application.properties); secrets have no committed default.
+
+The frontend uses `http://localhost:5173` and the `ram` realm by default. Keep `CORS_ALLOWED_ORIGINS` and `KEYCLOAK_ISSUER_URI` aligned with its configuration. Startup synchronization imports `ADMIN` users from Keycloak; it uses the backend admin client, separate from the public frontend client.
 
 ## Run locally
 
@@ -78,6 +103,12 @@ The test suite uses an in-memory H2 database in PostgreSQL compatibility mode, s
 
 ```powershell
 .\mvnw.cmd test
+```
+
+On macOS or Linux:
+
+```bash
+./mvnw test
 ```
 
 JaCoCo writes the coverage report to `target/site/jacoco/index.html`.
