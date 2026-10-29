@@ -9,6 +9,23 @@ Backend for the airport badge and access application I built during my 2025 inte
 
 [React frontend](https://github.com/hamza-lzr/badges-app-frontend) · [My portfolio](https://lazaar.netlify.app/)
 
+## Visual demo
+
+[Try the demo](https://lazaar.netlify.app/demos/badges/demo.html) — badges, requests, airport access and dashboard. No sign-in required.
+
+The demo reuses the project’s React screens with separate navigation and fictitious data. Changes stay in memory and reset on reload. It does not contact a backend or identity provider.
+
+![Requests and approvals — fictitious data](https://raw.githubusercontent.com/hamza-lzr/badges-app-frontend/main/docs/screenshots/badges-requests.jpg)
+
+<details>
+<summary>View the badge list and detail screen</summary>
+
+![Badge list — fictitious data](https://raw.githubusercontent.com/hamza-lzr/badges-app-frontend/main/docs/screenshots/badges-table.jpg)
+
+![Badge detail — fictitious data](https://raw.githubusercontent.com/hamza-lzr/badges-app-frontend/main/docs/screenshots/badges-details.jpg)
+
+</details>
+
 ## Start with the code
 
 - [Badge handling](src/main/java/com/ram/badgesapp/services/BadgeService.java) and [airport access](src/main/java/com/ram/badgesapp/services/AccessService.java)
